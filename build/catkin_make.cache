@@ -1,0 +1,2 @@
+grasppoints
+-DCATKIN_DEVEL_PREFIX=/home/tabby/Documents/595 Robotic Manipulation/GraspPointDetection/devel -DCMAKE_INSTALL_PREFIX=/home/tabby/Documents/595 Robotic Manipulation/GraspPointDetection/install -G Unix Makefiles
