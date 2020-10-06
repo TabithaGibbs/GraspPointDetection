@@ -1,8 +1,0 @@
-prefix=/home/tabby/Documents/595 Robotic Manipulation/GraspPointDetection/GraspPointOptimization/devel
-
-Name: grasppoints
-Description: Description of grasppoints
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
