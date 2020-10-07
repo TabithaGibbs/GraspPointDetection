@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import rospy
-from PIL import Image
+from cv_bridge import CvBridge
+from cv_bridge import CvBridgeError
+from sensor_msgs.msg import Image
+import cv2
 
 
 class ImageAcquirer:
@@ -14,21 +17,31 @@ class ImageAcquirer:
 
         # ROS initializations
         rospy.init_node('ImageAcquirer', anonymous = True)
-        self.img_pub = rospy.Publisher('image')
-        self.rate = rospy.Rate(50) #50 hz
-        while not rospy.is_shutdown():
-            self.pull_static_image()
-            self.rate.sleep()
+        self.use_camera = rospy.get_param('use camera')
+        self.img_pub = rospy.Publisher('image', Image, queue_size =10)
+        self.rate = rospy.Rate(2000) #2000 hz
+        self.bridge = CvBridge()
+
+
+        if self.use_camera:
+            while not rospy.is_shutdown():
+                self.pull_camera_image()
+                self.rate.sleep()
+        else:
+            while not rospy.is_shutdown():
+                self.pull_static_image()
+                self.rate.sleep()
 
     def pull_static_image(self):
         """
         reads image from file and publishes on image topic
         """
         try:
-            img = Image.open("calli.png")
-            self.img_pub.publish(img)
+            cv_image = cv2.imread('/calli.png')
+            image_message = self.bridge.cv2_to_imgmsg(cv_image, encoding="passthrough")
+            self.img_pub.publish(image_message)
         except IOError:
-            print('Error reading file')
+            rospy.loginfo("Error reading file")
 
     def pull_camera_image(self):
         """

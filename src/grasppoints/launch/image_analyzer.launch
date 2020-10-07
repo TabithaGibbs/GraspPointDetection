@@ -1,0 +1,8 @@
+<launch>
+
+  <param name="use camera" value="true" type="bool" />
+
+  <node name="image_acquirer" pkg="grasppoints" type="ImageAcquirer.py" />
+  <node name="image_processor" pkg="grasppoints" type="image_processor.py" />
+  
+</launch>
