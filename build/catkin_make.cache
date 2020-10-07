@@ -1,2 +1,2 @@
-
+grasppoints
 -DCATKIN_DEVEL_PREFIX=/home/tabby/GraspPointDetection/devel -DCMAKE_INSTALL_PREFIX=/home/tabby/GraspPointDetection/install -G Unix Makefiles

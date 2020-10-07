@@ -12,7 +12,7 @@ from pyefd import normalize_efd
 # load in image
 #img = cv.imread('GLASS-RED_Engraved.png',0) #other images for testing
 #img = cv.imread('calli.png',0)
-img = cv.imread('QueenOfHearts.jpg') #only image that actually produces single, continuous edge
+img = cv.imread('Hourglass_Solid.jpg') #only image that actually produces single, continuous edge
 
 
 # Canny edge detector which produces the binarized image containing only the silhouette ideally
@@ -34,7 +34,7 @@ edges = cv.Canny(img,100,200) #(100,200) was default, (20,90) produced good berk
 # THE ACTUAL CALCULATION OF THE EFD COEFFICIENTS IS HERE 
 
 # find the contours of a binary image using OpenCV
-_, contours, _= cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+contours = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
 #iterate through all contours found and store each contour's 
 #eliiptical Fourier descriptor's (EFD's) coefficients.

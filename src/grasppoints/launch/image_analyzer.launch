@@ -1,8 +1,11 @@
 <launch>
 
   <param name="use camera" value="True" type="bool" />
-  <param name="image file" value = "QueenOfHearts.jpg" type="String" />
+  <param name="image file" value = "Hourglass_Solid.jpg" type="String" />
+
   <param name="Desired_FPS" value = "40" type="int" />
+  <param name="max autofill size" value = "20" type="int"/>
+  <param name="min blob size" value = "70" type="int"/>
 
   <node name="image_acquirer" pkg="grasppoints" type="ImageAcquirer.py" />
   <node name="image_processor" pkg="grasppoints" type="image_processor.py" />

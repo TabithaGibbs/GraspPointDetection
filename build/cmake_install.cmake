@@ -131,6 +131,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/tabby/GraspPointDetection/build/gtest/cmake_install.cmake")
+  include("/home/tabby/GraspPointDetection/build/grasppoints/cmake_install.cmake")
 
 endif()
 

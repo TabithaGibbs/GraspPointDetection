@@ -7,7 +7,4 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/tabby/GraspPointDetection/devel:$CMAKE_PREFIX_PATH"
 export PWD='/home/tabby/GraspPointDetection/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/home/tabby/GraspPointDetection/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/home/tabby/GraspPointDetection/src:$ROS_PACKAGE_PATH"
