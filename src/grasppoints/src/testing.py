@@ -12,7 +12,7 @@ from pyefd import normalize_efd
 # load in image
 #img = cv.imread('GLASS-RED_Engraved.png',0) #other images for testing
 #img = cv.imread('calli.png',0)
-img = cv.imread('Hourglass_Solid.jpg') #only image that actually produces single, continuous edge
+img = cv.imread('QueenOfHearts.jpg') #only image that actually produces single, continuous edge
 
 
 # Canny edge detector which produces the binarized image containing only the silhouette ideally
