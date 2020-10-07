@@ -34,7 +34,7 @@ class ImageAcquirer:
             rospy.loginfo("Camera feed instantiated")
 
             #FPS setup
-            self.FPS = 1/60
+            self.FPS = 1/(rospy.get_param('Desired_FPS'))
             self.FPS_MS = int(self.FPS * 1000)
             rospy.loginfo("FPS constants set")
 
@@ -54,10 +54,9 @@ class ImageAcquirer:
                     pass
         else:
             #repeatedly grab static image and publish it
-            self.pull_static_image()
-            rospy.sleep(1.)
-            cv2.imshow('Static image filtered', self.frame)
-            cv2.waitKey(1)
+            filename = rospy.get_param('image file')
+            rospack = rospkg.RosPack()
+            self.image_path = rospack.get_path('grasppoints') + '/src/' + filename
             while not rospy.is_shutdown():
                 self.pull_static_image()
                 rospy.sleep(1.)
@@ -66,10 +65,8 @@ class ImageAcquirer:
         """
         reads image from file and publishes on image topic
         """
-        rospack = rospkg.RosPack()
-        image_path = rospack.get_path('grasppoints') + '/src/'
         try:
-            self.frame = cv2.imread(image_path + 'calli.jpg', 0)
+            self.frame = cv2.imread(self.image_path, 0)
             self.frame = self.filter_image(self.frame)
             image_message = self.bridge.cv2_to_imgmsg(self.frame, encoding="passthrough")
             self.img_pub.publish(image_message)
