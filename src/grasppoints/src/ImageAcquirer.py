@@ -20,7 +20,6 @@ class ImageAcquirer:
         rospy.init_node('ImageAcquirer', anonymous = True)
         self.use_camera = rospy.get_param('use camera')
         self.img_pub = rospy.Publisher('acquired_image', Image, queue_size =10)
-        self.rate = rospy.Rate(10000000000000) #200000 hz
         self.bridge = CvBridge()
 
 
@@ -28,12 +27,12 @@ class ImageAcquirer:
             self.vid = cv2.VideoCapture(0)
             while not rospy.is_shutdown():
                 self.pull_camera_image()
-                self.rate.sleep()
+                rospy.sleep(1.)
             self.vid.release
         else:
             while not rospy.is_shutdown():
                 self.pull_static_image()
-                self.rate.sleep()
+                rospy.sleep(1.)
 
     def pull_static_image(self):
         """
@@ -55,6 +54,8 @@ class ImageAcquirer:
         """
         ret, frame = self.vid.read()
         cv2.imshow('frame',frame)
+        key = cv2.waitKey(1)
+        rospy.loginfo("Image displayed")
 
 
 if __name__ == '__main__':
