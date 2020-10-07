@@ -14,7 +14,7 @@ from skimage import morphology
 from skimage import color
 import imutils
 from pyefd import elliptic_fourier_descriptors
-
+import matplotlib.pyplot as plt
 
 
 
@@ -65,8 +65,9 @@ class image_processor:
         time.sleep(self.FPS)
 
     def calcFourier(self):
-        coeffs = elliptic_fourier_descriptors(self.max_contour, order = 10)
-        print(coeffs)
+        pass
+        # = elliptic_fourier_descriptors(self.max_contour, order = 10)
+        #print(coeffs)
 
     def update_max_cnt(self):
         # Get max contour
@@ -106,9 +107,9 @@ class image_processor:
 
 
     def filter_image(self,img):
+
         bin_img = color.rgb2gray(img)
         #bin_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
         # Adaptive threshold -> binary image
         gray_bi = cv2.medianBlur(bin_img, 5)
         #gray_bi = cv2.GaussianBlur(img, (5,5), 0)
@@ -124,15 +125,16 @@ class image_processor:
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,9))
         gray_size_filtered = gray_size_filtered.astype(np.uint8)  # convert to an unsigned byte
         gray_size_filtered *= 255
-        gray_size_filtered = cv2.morphologyEx(gray_size_filtered, cv2.MORPH_CLOSE, kernel)
 
+        gray_size_filtered = cv2.morphologyEx(gray_size_filtered, cv2.MORPH_CLOSE, kernel)
         # blob fill in
         bi_filled = gray_size_filtered.copy()
         h, w = gray_size_filtered.shape[:2]
         mask = np.zeros((h + 2, w + 2), np.uint8)
         cv2.floodFill(bi_filled, mask, (0, 0), 255)
         bi_filled_inv = cv2.bitwise_not(bi_filled)
-        return gray_size_filtered | bi_filled_inv
+        final = gray_size_filtered | bi_filled_inv
+        return final
 
     def display_frame(self):
         """

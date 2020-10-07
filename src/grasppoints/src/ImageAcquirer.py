@@ -10,7 +10,6 @@ from threading import Thread
 import time
 import numpy as np
 from skimage import morphology
-import matplotlib.pyplot as plt
 
 
 class ImageAcquirer:
@@ -76,7 +75,7 @@ class ImageAcquirer:
         """
 
         try:
-            self.frame = cv2.imread(self.image_path)
+            self.frame = cv2.imread(self.image_path, 1)
             image_message = self.bridge.cv2_to_imgmsg(self.frame, encoding="passthrough")
             self.img_pub.publish(image_message)
         except:
