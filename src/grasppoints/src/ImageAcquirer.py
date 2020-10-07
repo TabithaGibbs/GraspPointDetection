@@ -5,6 +5,7 @@ from cv_bridge import CvBridge
 from cv_bridge import CvBridgeError
 from sensor_msgs.msg import Image
 import cv2
+import rospkg
 
 
 class ImageAcquirer:
@@ -37,12 +38,14 @@ class ImageAcquirer:
         """
         reads image from file and publishes on image topic
         """
+        rospack = rospkg.RosPack()
+        image_path = rospack.get_path('grasppoints') + '/src/'
         try:
-            cv_image = cv2.imread('/calli.png')
+            cv_image = cv2.imread(image_path + 'calli.png')
             image_message = self.bridge.cv2_to_imgmsg(cv_image, encoding="passthrough")
             self.img_pub.publish(image_message)
             rospy.loginfo("Image published")
-        except:
+        except IOError:
             rospy.loginfo("Error reading file")
 
     def pull_camera_image(self):
