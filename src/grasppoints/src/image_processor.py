@@ -9,7 +9,6 @@ from std_msgs.msg import String
 
 def callback(data):
     rospy.loginfo("image received")
-    cv_image 
         
 def image_processor():
 
@@ -20,7 +19,7 @@ def image_processor():
     # run simultaneously.
     rospy.init_node('image_processor', anonymous=True)
 
-    rospy.Subscriber("image", Image, callback)
+    rospy.Subscriber('acquired_image', Image, callback)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

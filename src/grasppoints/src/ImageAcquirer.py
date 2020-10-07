@@ -18,7 +18,7 @@ class ImageAcquirer:
         # ROS initializations
         rospy.init_node('ImageAcquirer', anonymous = True)
         self.use_camera = rospy.get_param('use camera')
-        self.img_pub = rospy.Publisher('image', Image, queue_size =10)
+        self.img_pub = rospy.Publisher('acquired_image', Image, queue_size =10)
         self.rate = rospy.Rate(2000) #2000 hz
         self.bridge = CvBridge()
 
@@ -28,6 +28,7 @@ class ImageAcquirer:
                 self.pull_camera_image()
                 self.rate.sleep()
         else:
+
             while not rospy.is_shutdown():
                 self.pull_static_image()
                 self.rate.sleep()
@@ -40,7 +41,8 @@ class ImageAcquirer:
             cv_image = cv2.imread('/calli.png')
             image_message = self.bridge.cv2_to_imgmsg(cv_image, encoding="passthrough")
             self.img_pub.publish(image_message)
-        except IOError:
+            rospy.loginfo("Image published")
+        except:
             rospy.loginfo("Error reading file")
 
     def pull_camera_image(self):
