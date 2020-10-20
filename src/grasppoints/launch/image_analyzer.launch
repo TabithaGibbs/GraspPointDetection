@@ -1,7 +1,7 @@
 <launch>
 
-  <param name="use camera" value="True" type="bool" />
-  <param name="image file" value = "calli.jpg" type="String" />
+  <param name="use camera" value="False" type="bool" />
+  <param name="image file" value = "Hourglass_Solid.jpg" type="String" />
 
   <param name="Desired_FPS" value = "40" type="int" />
   <param name="max autofill size" value = "20" type="int"/>

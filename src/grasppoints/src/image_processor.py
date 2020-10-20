@@ -15,7 +15,8 @@ from skimage import color
 import imutils
 from pyefd import elliptic_fourier_descriptors
 import matplotlib.pyplot as plt
-import EFD_Calculator
+from EFD_Calculator import EFD_Calculator
+from std_msgs.msg import Float32MultiArray as FloatArray
 
 
 
@@ -26,8 +27,10 @@ class image_processor:
         rospy.init_node('image_processor', anonymous=True)
 
         rospy.Subscriber('acquired_image', Image, self.callback)
+        self.EFD_publisher = rospy.Publisher('EFD_constants', FloatArray, queue_size= 1)
+        self.EFD_msg = FloatArray()
 
-        self.EFD_Calculator = EFD_Calculator(4)
+        self.EFD_Calculator = EFD_Calculator(5)
         self.bridge = CvBridge()
         self.minBlobSize = rospy.get_param("min blob size")
         self.maxAutofillSize = rospy.get_param("max autofill size")
@@ -62,9 +65,15 @@ class image_processor:
             self.bin_img = self.filter_image(gray_img)
             self.update_max_cnt()
             FCD_Coeffs = self.EFD_Calculator.calc_coeffs(self.max_contour)
+            print(FCD_Coeffs)
+            self.EFD_msg.data = self.format_EFD_message_data(FCD_Coeffs)
+            self.EFD_publisher.publish()
             rospy.loginfo("New frame published")
             #self.cont_frame = self.bin_img
         time.sleep(self.FPS)
+
+    def format_EFD_message_data(self, coeffs):
+        return coeffs
 
     def update_max_cnt(self):
         # Get max contour
@@ -75,7 +84,6 @@ class image_processor:
             if cv2.contourArea(i) > cv2.arcLength(i, True):
                 closed_contours.append(i)
         self.max_contour = max(closed_contours, key=cv2.contourArea)
-        print(self.max_contour)
         out = np.zeros(self.bin_img.shape, np.uint8)
         cv2.drawContours(out, [self.max_contour], -1, 255, cv2.FILLED)
         bin_mask = cv2.bitwise_and(self.bin_img, out)

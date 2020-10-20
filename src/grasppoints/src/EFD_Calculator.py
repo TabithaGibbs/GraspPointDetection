@@ -13,6 +13,8 @@ class EFD_Calculator:
     def calc_coeffs(self, max_contour):
         coeffs = []
         coeffs.append(elliptic_fourier_descriptors(np.squeeze(max_contour), order=self.order))
+        print(coeffs)
+
         dxy = np.diff(np.squeeze(max_contour), axis=0)
         dt = np.sqrt((dxy ** 2).sum(axis=1))
         t = np.concatenate([([0.]), np.cumsum(dt)])
@@ -25,10 +27,10 @@ class EFD_Calculator:
 
         hmn = const.reshape((self.order, -1)) * t
 
-        a = coeffs[1][:, 0] * const
-        b = coeffs[1][:, 1] * const
-        c = coeffs[1][:, 2] * const
-        d = coeffs[1][:, 3] * const
+        a = coeffs[0][:, 0] * const
+        b = coeffs[0][:, 1] * const
+        c = coeffs[0][:, 2] * const
+        d = coeffs[0][:, 3] * const
 
         a = a.reshape((self.order, -1))
         b = b.reshape((self.order, -1))
@@ -40,5 +42,10 @@ class EFD_Calculator:
 
         Nx = -1 * a * hmn * hmn * np.cos(hmn) - b * hmn * hmn * np.sin(hmn)
         Ny = -1 * c * hmn * hmn * np.cos(hmn) - d * hmn * hmn * np.sin(hmn)
+
+        Tx = np.sum(Tx,0)
+        Ty = np.sum(Ty,0)
+        Nx = np.sum(Nx,0)
+        Ny = np.sum(Ny,0)
 
         return [Tx, Ty, Nx, Ny]
