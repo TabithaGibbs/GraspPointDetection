@@ -15,6 +15,7 @@ from skimage import color
 import imutils
 from pyefd import elliptic_fourier_descriptors
 import matplotlib.pyplot as plt
+import EFD_Calculator
 
 
 
@@ -26,6 +27,7 @@ class image_processor:
 
         rospy.Subscriber('acquired_image', Image, self.callback)
 
+        self.EFD_Calculator = EFD_Calculator(4)
         self.bridge = CvBridge()
         self.minBlobSize = rospy.get_param("min blob size")
         self.maxAutofillSize = rospy.get_param("max autofill size")
@@ -59,15 +61,10 @@ class image_processor:
             gray_img = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
             self.bin_img = self.filter_image(gray_img)
             self.update_max_cnt()
-            self.calcFourier()
+            FCD_Coeffs = self.EFD_Calculator.calc_coeffs(self.max_contour)
             rospy.loginfo("New frame published")
             #self.cont_frame = self.bin_img
         time.sleep(self.FPS)
-
-    def calcFourier(self):
-        pass
-        # = elliptic_fourier_descriptors(self.max_contour, order = 10)
-        #print(coeffs)
 
     def update_max_cnt(self):
         # Get max contour

@@ -60,7 +60,7 @@ class ImageAcquirer:
             #repeatedly grab static image and publish it
             filename = rospy.get_param('image file')
             rospack = rospkg.RosPack()
-            self.image_path = rospack.get_path('grasppoints') + '/src/' + filename
+            self.image_path = rospack.get_path('grasppoints') + '/src/TestImages/' + filename
             while not rospy.is_shutdown():
                 try:
                     self.pull_static_image()
