@@ -26,7 +26,6 @@ class image_processor:
     def __init__(self):
         rospy.init_node('image_processor', anonymous=True)
 
-        rospy.Subscriber('acquired_image', Image, self.callback)
         self.EFD_publisher = rospy.Publisher('EFD_constants', FloatArray, queue_size= 1)
         self.EFD_msg = FloatArray()
 
@@ -34,23 +33,31 @@ class image_processor:
         self.bridge = CvBridge()
         self.minBlobSize = rospy.get_param("min blob size")
         self.maxAutofillSize = rospy.get_param("max autofill size")
-        self.use_camera = rospy.get_param('use camera')
-        self.status = False
-        # FPS setup
-        self.FPS = 1 / (rospy.get_param('Desired_FPS'))
-        self.FPS_MS = int(self.FPS * 1000)
-        rospy.loginfo("FPS constants set")
 
-        # create thread
-        self.feed_thread = Thread(target=self.FCD, args=())
-        self.feed_thread.daemon = True
-        self.feed_thread.start()
-        rospy.loginfo("Thread created")
+        rospy.Subscriber('acquired_image', Image, self.ProcessImage)
 
-        if self.use_camera:
-            self.waitkeyval = 20
+        if not rospy.get_param('use Gazebo cam'):
+            self.status = False
+            self.use_camera = rospy.get_param('use camera')
+            # FPS setup
+            self.FPS = 1 / (rospy.get_param('Desired_FPS'))
+            self.FPS_MS = int(self.FPS * 1000)
+            rospy.loginfo("FPS constants set")
+
+            # create thread
+            self.feed_thread = Thread(target=self.FCD, args=())
+            self.feed_thread.daemon = True
+            self.feed_thread.start()
+            rospy.loginfo("Thread created")
+
+            if self.use_camera:
+                self.waitkeyval = 20
+            else:
+                self.waitkeyval = 1
         else:
-            self.waitkeyval = 1
+            self.status = True
+            rospy.Subscriber('camera_feed', Image, self.GazeboProcess)
+
 
         while not rospy.is_shutdown():
             try:
@@ -58,6 +65,9 @@ class image_processor:
             except AttributeError:
                 rospy.loginfo("Error, may be temporary")
                 pass
+
+
+
 
     def FCD(self):
         if self.status:
@@ -103,11 +113,14 @@ class image_processor:
         self.cont_frame = masked_img
 
 
-
-    def callback(self, data):
+    def convert_to_cv2(self, data):
         rospy.loginfo("image received")
         self.status = True
         self.frame = self.bridge.imgmsg_to_cv2(data, desired_encoding='passthrough')
+
+
+    def ProcessImage(self, data):
+        self.convert_to_cv2(data)
         self.FCD()
 
 

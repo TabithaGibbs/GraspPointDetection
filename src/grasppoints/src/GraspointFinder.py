@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+from geometry_msgs.msg import Pose
 
 
 class GraspointFinder:
@@ -8,15 +9,34 @@ class GraspointFinder:
     def __init__(self):
         rospy.init_node('GraspointMachine', anonymous=True)
         self.currentCurvature = 0
-        rospy.Subscriber('OptimizationVal', float, self.update_curvatures())
+        self.currentPose = Pose()
+        self.OptimumPose = Pose()
+        rospy.Subscriber('OptimizationMetric', float, self.update_curvatures())
+
+
+        self.optimize_direction("Right")
 
 
 
 
     def optimize_direction(self, direction):
-        self.optimize_direction()
-        pass
+        if direction == "Right":
+            #move right
+            pass
+        elif direction == "Left":
+            # move left
+            pass
+        elif direction == "Up":
+            # move up
+            pass
+        elif direction == "Down":
+            # move down
+            pass
 
-    def update_curvatures(self, data):
-        self.previousCurvature = self.currentCurvature
-        self.currentCurvature = data
+
+
+    def update_curvatures(self, OptimizationMetric):
+        self.previousCurvature = self.currentCurvature.copy()
+        self.previousPose = self.currentPose
+        self.currentCurvature = OptimizationMetric
+        self.currentPose
