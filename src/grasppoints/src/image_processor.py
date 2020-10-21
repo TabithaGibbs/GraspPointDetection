@@ -101,6 +101,9 @@ class image_processor:
         cv2.drawContours(self.labeled_img, [max_contour], -1, (0, 255, 0), 2)
         cv2.circle(self.labeled_img, (cX, cY), 7, (255, 255, 255), -1)
         cv2.putText(self.labeled_img, "center", (cX - 20, cY - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        for index in C_max:
+            point = max_contour[index][0]
+            cv2.circle(self.labeled_img, (point[0],point[1]), 7, (0,0,255), -1)
 
 
     def calc_max_cnt(self, bin_img):
@@ -127,10 +130,6 @@ class image_processor:
             self.OOV_alert.publish(self.BoolMsg)
             self.OOV = OOV
         return max_contour
-
-    def format_EFD_message_data(self, coeffs):
-        return coeffs
-
 
 
 
