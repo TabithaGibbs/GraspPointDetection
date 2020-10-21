@@ -14,7 +14,6 @@ class EFD_Calculator:
     def calc_coeffs(self, max_contour):
         coeffs = []
         coeffs.append(elliptic_fourier_descriptors(np.squeeze(max_contour), order=self.order))
-        print(coeffs)
 
         dxy = np.diff(np.squeeze(max_contour), axis=0)
         dt = np.sqrt((dxy ** 2).sum(axis=1))

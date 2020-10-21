@@ -18,7 +18,6 @@ class ImageAcquirer:
         """
 
         # ROS initializations
-        rospy.init_node('ImageAcquirer', anonymous = True)
         self.use_camera = rospy.get_param('use camera')
         self.img_pub = rospy.Publisher('acquired_image', Image, queue_size =10)
         self.bridge = CvBridge()
@@ -31,19 +30,13 @@ class ImageAcquirer:
 
 
         if not rospy.get_param("use Gazebo cam"):
+            rospy.init_node('ImageAcquirer', anonymous=True)
             if self.use_camera:
                 #Setup camera
                 self.vid = cv2.VideoCapture(0)
                 self.vid.set(cv2.CAP_PROP_BUFFERSIZE,1)
                 rospy.loginfo("Camera feed instantiated")
 
-
-
-                #create thread
-                #self.feed_thread = Thread(target=self.update_camera_image, args=())
-                #self.feed_thread.daemon = True
-                #self.feed_thread.start()
-                #rospy.loginfo("Thread created")
 
                 #No current frame
                 self.status = False
