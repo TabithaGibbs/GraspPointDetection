@@ -14,6 +14,20 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   cv_bridge
   image_transport
+  message_generation
+)
+
+add_message_files(
+   DIRECTORY
+   Custom_Msgs
+   FILES
+   Pose_Frame.msg
+)
+
+generate_messages(
+   DEPENDENCIES
+   sensor_msgs
+   geometry_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -28,6 +42,7 @@ find_package(OpenCV REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
+  CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES grasppoints
 #  CATKIN_DEPENDS std_msgs
@@ -45,6 +60,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
+
+
+
 
 
 ## Declare a C++ library

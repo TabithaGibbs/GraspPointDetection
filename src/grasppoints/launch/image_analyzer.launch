@@ -1,6 +1,6 @@
 <launch>
 
-  <param name="use Gazebo cam" value = "True" type = "bool" />
+  <param name="use Gazebo cam" value = "False" type = "bool" />
   <param name="use camera" value="False" type="bool" />
   <param name="image file" value = "Hourglass_Solid.jpg" type="String" />
 

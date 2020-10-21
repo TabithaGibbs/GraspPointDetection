@@ -17,16 +17,18 @@ from pyefd import elliptic_fourier_descriptors
 import matplotlib.pyplot as plt
 from EFD_Calculator import EFD_Calculator
 from std_msgs.msg import Float32MultiArray as FloatArray
-
-
+from geometry_msgs.msg import Pose
+import scipy as sp
+from scipy import signal
 
         
 class image_processor:
 
     def __init__(self):
         rospy.init_node('image_processor', anonymous=True)
-
+        self.status = False
         self.EFD_publisher = rospy.Publisher('EFD_constants', FloatArray, queue_size= 1)
+        self.Pose_publisher = rospy.Publisher('Frame_Pose', Pose, queue_size=1)
         self.EFD_msg = FloatArray()
 
         self.EFD_Calculator = EFD_Calculator(5)
@@ -36,27 +38,24 @@ class image_processor:
 
         rospy.Subscriber('acquired_image', Image, self.ProcessImage)
 
-        if not rospy.get_param('use Gazebo cam'):
-            self.status = False
-            self.use_camera = rospy.get_param('use camera')
-            # FPS setup
-            self.FPS = 1 / (rospy.get_param('Desired_FPS'))
-            self.FPS_MS = int(self.FPS * 1000)
-            rospy.loginfo("FPS constants set")
+        # create thread
+        self.feed_thread = Thread(target=self.FCD, args=())
+        self.feed_thread.daemon = True
+        self.feed_thread.start()
+        rospy.loginfo("Thread created")
+        # FPS setup
+        self.FPS = 1 / (rospy.get_param('Desired_FPS'))
+        self.FPS_MS = int(self.FPS * 1000)
+        rospy.loginfo("FPS constants set")
 
-            # create thread
-            self.feed_thread = Thread(target=self.FCD, args=())
-            self.feed_thread.daemon = True
-            self.feed_thread.start()
-            rospy.loginfo("Thread created")
+        self.waitkeyval = 20
 
-            if self.use_camera:
-                self.waitkeyval = 20
-            else:
-                self.waitkeyval = 1
-        else:
-            self.status = True
-            rospy.Subscriber('camera_feed', Image, self.GazeboProcess)
+        #if not rospy.get_param('use Gazebo cam'):
+        #    self.use_camera = rospy.get_param('use camera')
+        #    if self.use_camera:
+        #        self.waitkeyval = 20
+        #    else:
+        #        self.waitkeyval = 1
 
 
         while not rospy.is_shutdown():
@@ -68,19 +67,30 @@ class image_processor:
 
 
 
-
     def FCD(self):
+        pose = self.GetPose()
         if self.status:
             gray_img = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
             self.bin_img = self.filter_image(gray_img)
             self.update_max_cnt()
             FCD_Coeffs = self.EFD_Calculator.calc_coeffs(self.max_contour)
+            self.calc_cMax(FCD_Coeffs)
             print(FCD_Coeffs)
             self.EFD_msg.data = self.format_EFD_message_data(FCD_Coeffs)
-            self.EFD_publisher.publish()
+            self.Pose_publisher.publish(pose)
+            self.EFD_publisher.publish(self.EFD_msg)
             rospy.loginfo("New frame published")
             #self.cont_frame = self.bin_img
-        time.sleep(self.FPS)
+            time.sleep(self.FPS)
+
+    def calc_cMax(self, coeffs):
+        N = np.stack((coeffs[2], coeffs[3]))
+        C = np.linalg.norm(N, axis=0)
+        C_max = sp.signal.argrelextrema(C, np.greater)
+        print("******")
+        print("******")
+        print("C max vals: ")
+        print(C_max)
 
     def format_EFD_message_data(self, coeffs):
         return coeffs
@@ -115,17 +125,18 @@ class image_processor:
 
     def convert_to_cv2(self, data):
         rospy.loginfo("image received")
-        self.status = True
         self.frame = self.bridge.imgmsg_to_cv2(data, desired_encoding='passthrough')
 
 
     def ProcessImage(self, data):
         self.convert_to_cv2(data)
+        self.status = True
         self.FCD()
 
+    def GetPose(self):
+        return Pose()
 
     def filter_image(self,img):
-
         bin_img = color.rgb2gray(img)
         #bin_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # Adaptive threshold -> binary image

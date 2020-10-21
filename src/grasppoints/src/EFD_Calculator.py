@@ -5,6 +5,7 @@ from pyefd import elliptic_fourier_descriptors
 
 
 
+
 class EFD_Calculator:
 
     def __init__(self, order):
@@ -47,5 +48,7 @@ class EFD_Calculator:
         Ty = np.sum(Ty,0)
         Nx = np.sum(Nx,0)
         Ny = np.sum(Ny,0)
+
+
 
         return [Tx, Ty, Nx, Ny]
