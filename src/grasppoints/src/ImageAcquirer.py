@@ -8,9 +8,6 @@ import cv2
 import rospkg
 from threading import Thread
 import time
-import numpy as np
-from skimage import morphology
-
 
 class ImageAcquirer:
 
@@ -33,41 +30,42 @@ class ImageAcquirer:
         rospy.loginfo("FPS constants set")
 
 
-        if self.use_camera:
-            #Setup camera
-            self.vid = cv2.VideoCapture(0)
-            self.vid.set(cv2.CAP_PROP_BUFFERSIZE,1)
-            rospy.loginfo("Camera feed instantiated")
+        if not rospy.get_param("use Gazebo cam"):
+            if self.use_camera:
+                #Setup camera
+                self.vid = cv2.VideoCapture(0)
+                self.vid.set(cv2.CAP_PROP_BUFFERSIZE,1)
+                rospy.loginfo("Camera feed instantiated")
 
 
 
-            #create thread
-            #self.feed_thread = Thread(target=self.update_camera_image, args=())
-            #self.feed_thread.daemon = True
-            #self.feed_thread.start()
-            #rospy.loginfo("Thread created")
+                #create thread
+                #self.feed_thread = Thread(target=self.update_camera_image, args=())
+                #self.feed_thread.daemon = True
+                #self.feed_thread.start()
+                #rospy.loginfo("Thread created")
 
-            #No current frame
-            self.status = False
-            while not rospy.is_shutdown():
-                try:
-                    self.update_camera_image()
-                except:
-                    rospy.loginfo("Error")
-                    pass
-                time.sleep(self.FPS)
-        else:
-            #repeatedly grab static image and publish it
-            filename = rospy.get_param('image file')
-            rospack = rospkg.RosPack()
-            self.image_path = rospack.get_path('grasppoints') + '/src/TestImages/' + filename
-            while not rospy.is_shutdown():
-                try:
-                    self.pull_static_image()
-                except:
-                    rospy.loginfo("Error reading file")
-                    pass
-                time.sleep(self.FPS)
+                #No current frame
+                self.status = False
+                while not rospy.is_shutdown():
+                    try:
+                        self.update_camera_image()
+                    except:
+                        rospy.loginfo("Error")
+                        pass
+                    time.sleep(self.FPS)
+            else:
+                #repeatedly grab static image and publish it
+                filename = rospy.get_param('image file')
+                rospack = rospkg.RosPack()
+                self.image_path = rospack.get_path('grasppoints') + '/src/TestImages/' + filename
+                while not rospy.is_shutdown():
+                    try:
+                        self.pull_static_image()
+                    except:
+                        rospy.loginfo("Error reading file")
+                        pass
+                    time.sleep(self.FPS)
 
     def pull_static_image(self):
         """
