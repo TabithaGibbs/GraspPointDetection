@@ -21,6 +21,7 @@ from geometry_msgs.msg import Pose
 import scipy as sp
 from scipy import signal
 from std_msgs.msg import Bool as BooleanMsg
+from grasppoints.srv import CalcGrasppoints, CalcGrasppointsResponse
 
 
         
@@ -56,6 +57,13 @@ class image_processor:
 
         self.waitkeyval = 20
 
+        rospy.wait_for_service('calc_grasppoints')
+        try:
+            self.GPServiceProxy = rospy.ServiceProxy('calc_grasppoints', CalcGrasppoints)
+            print("Service instantiated")
+        except rospy.ServiceException as e:
+            print("Service proxy failed! - %s" % e)
+
 
         while not rospy.is_shutdown():
             try:
@@ -69,37 +77,44 @@ class image_processor:
         pose = self.GetPose()
         if self.status:
             gray_img = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-            self.bin_img = self.filter_image(gray_img)
-            self.update_max_cnt()
-            FCD_Coeffs = self.EFD_Calculator.calc_coeffs(self.max_contour)
-            self.calc_cMax(FCD_Coeffs)
-            self.EFD_msg.data = self.format_EFD_message_data(FCD_Coeffs)
+            bin_img = self.filter_image(gray_img)
+            max_contour = self.calc_max_cnt(bin_img)
+            FCD_Coeffs = self.EFD_Calculator.calc_coeffs(max_contour)
+            response = self.GPServiceProxy(FCD_Coeffs[0], FCD_Coeffs[1], FCD_Coeffs[2], FCD_Coeffs[3])
+            self.EFD_msg.data = FCD_Coeffs
             self.Pose_publisher.publish(pose)
             self.EFD_publisher.publish(self.EFD_msg)
-            self.color_image()
+            self.color_image(bin_img, max_contour, response.C, response.C_max, response.Grasp)
             time.sleep(self.FPS)
 
-    def calc_cMax(self, coeffs):
-        N = np.stack((coeffs[2], coeffs[3]))
-        C = np.linalg.norm(N, axis=0)
-        C_max = sp.signal.argrelextrema(C, np.greater)\
+    def color_image(self, bin_img, max_contour, C, C_max, GraspPoints):
+        out = np.zeros(bin_img.shape, np.uint8)
+        cv2.drawContours(out, [max_contour], -1, 255, cv2.FILLED)
+        bin_mask = cv2.bitwise_and(bin_img, out)
 
-    def format_EFD_message_data(self, coeffs):
-        return coeffs
+        self.labeled_img = cv2.bitwise_and(self.frame, self.frame, mask=bin_mask)
+        M = cv2.moments(max_contour)
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
 
-    def update_max_cnt(self):
-        # Get max contour
-        contours = cv2.findContours(self.bin_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # draw contour and center
+        cv2.drawContours(self.labeled_img, [max_contour], -1, (0, 255, 0), 2)
+        cv2.circle(self.labeled_img, (cX, cY), 7, (255, 255, 255), -1)
+        cv2.putText(self.labeled_img, "center", (cX - 20, cY - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+
+    def calc_max_cnt(self, bin_img):
+        contours = cv2.findContours(bin_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours = imutils.grab_contours(contours)
         closed_contours = []
         for i in contours:
             if cv2.contourArea(i) > cv2.arcLength(i, True):
                 closed_contours.append(i)
-        self.max_contour = max(closed_contours, key=cv2.contourArea)
-        row_size = len(self.bin_img)
-        column_size = len(self.bin_img[0])
+        max_contour = max(closed_contours, key=cv2.contourArea)
+        row_size = len(bin_img)
+        column_size = len(bin_img[0])
         OOV = False
-        for point in self.max_contour:
+        for point in max_contour:
             point = point[0]
             if point[0] == 0 or point[1] == 0:
                 OOV = True
@@ -111,26 +126,13 @@ class image_processor:
             self.BoolMsg.data = OOV
             self.OOV_alert.publish(self.BoolMsg)
             self.OOV = OOV
+        return max_contour
+
+    def format_EFD_message_data(self, coeffs):
+        return coeffs
 
 
-        out = np.zeros(self.bin_img.shape, np.uint8)
-        cv2.drawContours(out, [self.max_contour], -1, 255, cv2.FILLED)
-        bin_mask = cv2.bitwise_and(self.bin_img, out)
 
-        self.masked_img = cv2.bitwise_and(self.frame, self.frame, mask = bin_mask)
-
-
-    def color_image(self):
-        self.labeled_img = self.masked_img.copy()
-        # calc center of contour
-        M = cv2.moments(self.max_contour)
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-
-        # draw contour and center
-        cv2.drawContours(self.labeled_img, [self.max_contour], -1, (0, 255, 0), 2)
-        cv2.circle(self.labeled_img, (cX, cY), 7, (255, 255, 255), -1)
-        cv2.putText(self.labeled_img, "center", (cX - 20, cY - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
 
 

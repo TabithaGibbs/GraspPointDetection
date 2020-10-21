@@ -48,6 +48,4 @@ class EFD_Calculator:
         Nx = np.sum(Nx,0)
         Ny = np.sum(Ny,0)
 
-
-
         return [Tx, Ty, Nx, Ny]

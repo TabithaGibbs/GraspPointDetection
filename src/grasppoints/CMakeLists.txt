@@ -24,11 +24,24 @@ add_message_files(
    Pose_Frame.msg
 )
 
+add_service_files(
+   DIRECTORY
+   srv
+   FILES
+   CalcGrasppoints.srv
+)
+
 generate_messages(
    DEPENDENCIES
    sensor_msgs
    geometry_msgs
+   std_msgs
 )
+
+catkin_install_python(PROGRAMS srv/CalcGrasppoints.srv
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 
 find_package(OpenCV REQUIRED)
 

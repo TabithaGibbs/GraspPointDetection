@@ -1,0 +1,9 @@
+float32[] Tx
+float32[] Ty
+float32[] Nx
+float32[] Ny
+---
+float32[] C
+int16[] C_max
+float32 Sum
+int16[] Grasp
